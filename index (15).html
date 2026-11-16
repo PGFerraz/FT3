@@ -1,0 +1,875 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>AgendaIA — Bloco 3</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #17233c;
+      --muted: #64748b;
+      --line: #dce4ef;
+      --surface: #ffffff;
+      --canvas: #f3f6fb;
+      --blue: #3156d3;
+      --blue-soft: #eaf0ff;
+      --teal: #087f82;
+      --teal-soft: #e3f6f3;
+      --amber: #a55b08;
+      --amber-soft: #fff3dc;
+      --red: #b42332;
+      --red-soft: #fff0f0;
+      font-family: "Segoe UI", Arial, sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      background: var(--canvas);
+      color: var(--ink);
+      line-height: 1.5;
+    }
+
+    button, input, select { font: inherit; }
+    button { cursor: pointer; }
+
+    .shell {
+      width: min(1120px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 32px 0 56px;
+    }
+
+    .hero {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 24px;
+      margin-bottom: 24px;
+    }
+
+    .eyebrow {
+      margin: 0 0 8px;
+      color: var(--blue);
+      font-size: .78rem;
+      font-weight: 800;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+    }
+
+    h1, h2, h3, p { margin-top: 0; }
+    h1 { margin-bottom: 8px; font-size: clamp(2rem, 4vw, 2.8rem); line-height: 1.1; }
+    .intro { max-width: 700px; margin-bottom: 0; color: var(--muted); }
+
+    .tag {
+      flex: 0 0 auto;
+      border: 1px solid #c9d5fa;
+      border-radius: 999px;
+      background: var(--blue-soft);
+      color: #233f9e;
+      padding: 7px 12px;
+      font-size: .82rem;
+      font-weight: 700;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1.15fr) minmax(320px, .85fr);
+      gap: 20px;
+      align-items: start;
+    }
+
+    .stack { display: grid; gap: 20px; }
+
+    .card {
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      background: var(--surface);
+      box-shadow: 0 8px 24px rgb(23 35 60 / 5%);
+      padding: 20px;
+    }
+
+    .card-heading {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    h2 { margin-bottom: 4px; font-size: 1.16rem; }
+    h3 { margin-bottom: 8px; font-size: 1rem; }
+    .subtle { margin-bottom: 0; color: var(--muted); font-size: .88rem; }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr 1fr auto;
+      gap: 10px;
+      align-items: end;
+      margin-bottom: 18px;
+    }
+
+    label { display: grid; gap: 5px; color: #40506a; font-size: .78rem; font-weight: 700; }
+
+    input, select {
+      width: 100%;
+      min-width: 0;
+      border: 1px solid #cbd5e1;
+      border-radius: 9px;
+      background: #fff;
+      color: var(--ink);
+      padding: 9px 10px;
+    }
+
+    input:focus, select:focus, button:focus-visible {
+      outline: 3px solid rgb(49 86 211 / 25%);
+      outline-offset: 2px;
+    }
+
+    .button {
+      border: 0;
+      border-radius: 9px;
+      background: var(--blue);
+      color: #fff;
+      padding: 10px 14px;
+      font-weight: 750;
+      white-space: nowrap;
+    }
+
+    .button:hover { background: #2446bd; }
+    .button.secondary { border: 1px solid #cbd5e1; background: #fff; color: var(--ink); }
+    .button.secondary:hover { background: #f6f8fc; }
+    .button.tertiary { border: 1px solid #b7dcd5; background: var(--teal-soft); color: #075e61; }
+    .button.tertiary:hover { background: #d3efea; }
+
+    .task-list { display: grid; gap: 8px; }
+
+    .task-row {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto auto auto;
+      gap: 10px;
+      align-items: center;
+      border: 1px solid #e8edf4;
+      border-radius: 10px;
+      padding: 10px 12px;
+    }
+
+    .task-name { overflow-wrap: anywhere; font-weight: 700; }
+    .task-meta { color: var(--muted); font-size: .8rem; white-space: nowrap; }
+
+    .priority {
+      border-radius: 999px;
+      padding: 3px 8px;
+      font-size: .73rem;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+
+    .priority.alta { background: var(--red-soft); color: var(--red); }
+    .priority.media { background: var(--amber-soft); color: var(--amber); }
+    .priority.baixa { background: var(--teal-soft); color: var(--teal); }
+
+    .remove {
+      border: 0;
+      background: transparent;
+      color: #718096;
+      padding: 4px 6px;
+      font-size: 1.15rem;
+    }
+    .remove:hover { color: var(--red); }
+
+    .fixed-list { display: grid; gap: 8px; }
+    .fixed-item {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      border-left: 4px solid #8494ad;
+      border-radius: 6px;
+      background: #f3f5f8;
+      padding: 9px 12px;
+      font-size: .87rem;
+    }
+    .fixed-item strong { white-space: nowrap; }
+
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: end;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+    .controls label { min-width: 180px; }
+
+    .notice {
+      min-height: 24px;
+      margin: 0;
+      color: var(--muted);
+      font-size: .84rem;
+    }
+    .notice.error { color: var(--red); font-weight: 700; }
+
+    .metrics {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      margin: 16px 0;
+    }
+    .metric {
+      border-radius: 10px;
+      background: #f4f7fc;
+      padding: 11px;
+    }
+    .metric span { display: block; color: var(--muted); font-size: .74rem; }
+    .metric strong { display: block; margin-top: 3px; font-size: 1.15rem; }
+
+    .timeline { display: grid; gap: 8px; }
+    .slot {
+      display: grid;
+      grid-template-columns: 92px minmax(0, 1fr);
+      gap: 10px;
+      align-items: stretch;
+      min-height: 47px;
+    }
+    .slot-time {
+      padding-top: 10px;
+      color: var(--muted);
+      font-size: .77rem;
+      font-variant-numeric: tabular-nums;
+    }
+    .slot-content {
+      border: 1px dashed #d5deeb;
+      border-radius: 9px;
+      padding: 9px 11px;
+      color: #8390a3;
+      font-size: .82rem;
+    }
+    .slot-content.task {
+      border: 1px solid #c7d4ff;
+      background: var(--blue-soft);
+      color: #213c95;
+    }
+    .slot-content.fixed {
+      border: 1px solid #d5dbe4;
+      background: #edf0f4;
+      color: #475569;
+    }
+    .slot-content strong { display: block; }
+    .slot-content small { display: block; margin-top: 2px; opacity: .8; }
+
+    .unscheduled {
+      margin-top: 16px;
+      border: 1px solid #f1d2a4;
+      border-radius: 10px;
+      background: #fffaf0;
+      padding: 12px;
+    }
+    .unscheduled h3 { margin-bottom: 6px; color: #8d510d; }
+    .unscheduled ul { margin: 0; padding-left: 18px; color: #70440e; font-size: .85rem; }
+
+    .compare { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+    .compare-card { border: 1px solid var(--line); border-radius: 10px; padding: 12px; }
+    .compare-card strong { display: block; }
+    .compare-card p { margin: 5px 0 0; color: var(--muted); font-size: .82rem; }
+
+    .test-output {
+      margin: 12px 0 0;
+      border-radius: 9px;
+      background: #f4f7fc;
+      padding: 12px;
+      color: #40506a;
+      font: .78rem/1.6 Consolas, monospace;
+      white-space: pre-wrap;
+    }
+
+    .footnote { margin: 18px 0 0; color: var(--muted); font-size: .78rem; }
+    .empty { color: var(--muted); font-size: .87rem; }
+
+    @media (max-width: 880px) {
+      .layout { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 650px) {
+      .shell { width: min(100% - 20px, 560px); padding-top: 22px; }
+      .hero { display: block; }
+      .tag { display: inline-block; margin-top: 14px; }
+      .form-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .form-grid label:first-child { grid-column: 1 / -1; }
+      .form-grid button { grid-column: 1 / -1; }
+      .task-row { grid-template-columns: minmax(0, 1fr) auto auto; }
+      .task-row .task-meta:last-of-type { grid-column: 1 / 2; }
+      .metrics { grid-template-columns: 1fr; }
+      .slot { grid-template-columns: 68px minmax(0, 1fr); }
+    }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <header class="hero">
+      <div>
+        <p class="eyebrow">Projeto aplicado · Bloco 3</p>
+        <h1>AgendaIA</h1>
+        <p class="intro">Planejamento diário de tarefas com prioridades e prazos, sem sobrepor compromissos fixos. Compare uma busca gulosa com uma busca A* explicável.</p>
+      </div>
+      <span class="tag">Protótipo local</span>
+    </header>
+
+    <div class="layout">
+      <div class="stack">
+        <section class="card" aria-labelledby="tasks-title">
+          <div class="card-heading">
+            <div>
+              <h2 id="tasks-title">Tarefas do dia</h2>
+              <p class="subtle">Cenário demonstrativo; horários em intervalos de 30 minutos.</p>
+            </div>
+          </div>
+          <form id="task-form" class="form-grid">
+            <label>
+              Tarefa
+              <input id="task-name" maxlength="70" placeholder="Ex.: Revisar relatório" required>
+            </label>
+            <label>
+              Duração
+              <select id="task-duration">
+                <option value="30">30 min</option>
+                <option value="60" selected>1 h</option>
+                <option value="90">1 h 30</option>
+                <option value="120">2 h</option>
+              </select>
+            </label>
+            <label>
+              Prioridade
+              <select id="task-priority">
+                <option value="3">Alta</option>
+                <option value="2" selected>Média</option>
+                <option value="1">Baixa</option>
+              </select>
+            </label>
+            <label>
+              Prazo
+              <select id="task-deadline"></select>
+            </label>
+            <button class="button" type="submit">Adicionar</button>
+          </form>
+          <div id="task-list" class="task-list" aria-live="polite"></div>
+        </section>
+
+        <section class="card" aria-labelledby="fixed-title">
+          <div class="card-heading">
+            <div>
+              <h2 id="fixed-title">Compromissos fixos</h2>
+              <p class="subtle">Indisponibilidades já bloqueadas no cenário.</p>
+            </div>
+          </div>
+          <div id="fixed-list" class="fixed-list"></div>
+          <p class="footnote">Janela de planejamento: 08:00–18:00. O protótipo trata um único dia e não sincroniza calendários externos.</p>
+        </section>
+
+        <section class="card" aria-labelledby="tests-title">
+          <div class="card-heading">
+            <div>
+              <h2 id="tests-title">Verificação do protótipo</h2>
+              <p class="subtle">Testes funcionais locais para regras essenciais do planejador.</p>
+            </div>
+            <button id="run-tests" class="button secondary" type="button">Executar testes</button>
+          </div>
+          <p id="test-summary" class="notice" role="status">Os testes ainda não foram executados.</p>
+          <pre id="test-output" class="test-output" hidden></pre>
+        </section>
+      </div>
+
+      <div class="stack">
+        <section class="card" aria-labelledby="planner-title">
+          <div class="card-heading">
+            <div>
+              <h2 id="planner-title">Planejar agenda</h2>
+              <p class="subtle">As tarefas respeitam duração, prazo e compromissos existentes.</p>
+            </div>
+          </div>
+          <div class="controls">
+            <label>
+              Estratégia de busca
+              <select id="algorithm">
+                <option value="astar">A* — menor custo ponderado</option>
+                <option value="greedy">Gulosa — prioridade e prazo</option>
+              </select>
+            </label>
+            <button id="plan" class="button" type="button">Gerar agenda</button>
+            <button id="compare" class="button tertiary" type="button">Comparar</button>
+          </div>
+          <p id="message" class="notice" role="status"></p>
+          <div id="metrics" class="metrics" hidden></div>
+          <div id="comparison" class="compare" hidden></div>
+          <div id="timeline" class="timeline" aria-live="polite">
+            <p class="empty">Gere uma agenda para visualizar o planejamento.</p>
+          </div>
+          <div id="unscheduled" class="unscheduled" hidden></div>
+        </section>
+        <section class="card">
+          <h2>Como a busca decide</h2>
+          <p class="subtle"><strong>Gulosa:</strong> ordena tarefas por prioridade, prazo e duração e encaixa cada uma no primeiro horário disponível.</p>
+          <p class="subtle"><strong>A*:</strong> explora diferentes ordens de tarefas. A função de custo soma o horário de conclusão ponderado pela prioridade; a heurística fornece um limite inferior otimista para as tarefas restantes.</p>
+          <p class="footnote">Os prazos são tratados como limites rígidos. Se uma tarefa não couber antes do prazo, ela aparece como não agendada, sem ser descartada da lista.</p>
+        </section>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    (() => {
+      "use strict";
+
+      const DAY_START = 8 * 60;
+      const DAY_END = 18 * 60;
+      const SLOT_MINUTES = 30;
+      const SLOT_COUNT = (DAY_END - DAY_START) / SLOT_MINUTES;
+      const UNSCHEDULED_PENALTY = 10000;
+      const PRIORITY_NAMES = { 3: "Alta", 2: "Média", 1: "Baixa" };
+      const FIXED_EVENTS = [
+        { id: "fixed-1", name: "Aula", start: "09:00", end: "10:00" },
+        { id: "fixed-2", name: "Almoço", start: "12:30", end: "13:30" },
+        { id: "fixed-3", name: "Reunião de projeto", start: "15:00", end: "15:30" }
+      ];
+
+      let nextId = 5;
+      let tasks = [
+        { id: "task-1", name: "Finalizar roteiro do projeto", duration: 60, priority: 3, deadline: "12:00" },
+        { id: "task-2", name: "Revisar referências", duration: 60, priority: 2, deadline: "16:00" },
+        { id: "task-3", name: "Preparar slides da apresentação", duration: 90, priority: 3, deadline: "17:00" },
+        { id: "task-4", name: "Responder e-mails acadêmicos", duration: 30, priority: 1, deadline: "18:00" }
+      ];
+
+      const byId = (id) => document.getElementById(id);
+      const toMinute = (time) => {
+        const [hour, minute] = time.split(":").map(Number);
+        return hour * 60 + minute;
+      };
+      const toSlot = (time) => (toMinute(time) - DAY_START) / SLOT_MINUTES;
+      const toClock = (slot) => {
+        const minute = DAY_START + slot * SLOT_MINUTES;
+        return `${String(Math.floor(minute / 60)).padStart(2, "0")}:${String(minute % 60).padStart(2, "0")}`;
+      };
+      const priorityClass = (priority) => ({ 3: "alta", 2: "media", 1: "baixa" })[priority];
+
+      function populateDeadlines() {
+        const select = byId("task-deadline");
+        for (let minute = DAY_START + SLOT_MINUTES; minute <= DAY_END; minute += SLOT_MINUTES) {
+          const option = document.createElement("option");
+          option.value = `${String(Math.floor(minute / 60)).padStart(2, "0")}:${String(minute % 60).padStart(2, "0")}`;
+          option.textContent = option.value;
+          if (option.value === "17:00") option.selected = true;
+          select.append(option);
+        }
+      }
+
+      function renderTasks() {
+        const list = byId("task-list");
+        list.replaceChildren();
+        if (tasks.length === 0) {
+          list.innerHTML = '<p class="empty">Nenhuma tarefa cadastrada. Adicione uma tarefa para começar.</p>';
+          return;
+        }
+        for (const task of tasks) {
+          const row = document.createElement("div");
+          row.className = "task-row";
+          row.innerHTML = `
+            <span class="task-name"></span>
+            <span class="task-meta"></span>
+            <span class="priority ${priorityClass(task.priority)}">${PRIORITY_NAMES[task.priority]}</span>
+            <button class="remove" type="button" aria-label="Remover tarefa" data-remove="${task.id}">&times;</button>
+          `;
+          row.querySelector(".task-name").textContent = task.name;
+          row.querySelector(".task-meta").textContent = `${task.duration} min · até ${task.deadline}`;
+          list.append(row);
+        }
+      }
+
+      function renderFixedEvents() {
+        const list = byId("fixed-list");
+        list.replaceChildren();
+        for (const event of FIXED_EVENTS) {
+          const row = document.createElement("div");
+          row.className = "fixed-item";
+          const name = document.createElement("span");
+          name.textContent = event.name;
+          const time = document.createElement("strong");
+          time.textContent = `${event.start}–${event.end}`;
+          row.append(name, time);
+          list.append(row);
+        }
+      }
+
+      function baseOccupancy(events) {
+        const occupied = Array(SLOT_COUNT).fill(false);
+        for (const event of events) {
+          const start = toSlot(event.start);
+          const end = toSlot(event.end);
+          for (let slot = start; slot < end; slot += 1) occupied[slot] = true;
+        }
+        return occupied;
+      }
+
+      function findEarliestStart(occupied, durationSlots, deadlineSlot) {
+        for (let start = 0; start + durationSlots <= SLOT_COUNT && start + durationSlots <= deadlineSlot; start += 1) {
+          let available = true;
+          for (let offset = 0; offset < durationSlots; offset += 1) {
+            if (occupied[start + offset]) {
+              available = false;
+              break;
+            }
+          }
+          if (available) return start;
+        }
+        return -1;
+      }
+
+      function place(occupied, start, durationSlots) {
+        const result = occupied.slice();
+        for (let offset = 0; offset < durationSlots; offset += 1) result[start + offset] = true;
+        return result;
+      }
+
+      function normalizedTasks(inputTasks) {
+        return inputTasks.map((task) => ({
+          ...task,
+          durationSlots: task.duration / SLOT_MINUTES,
+          deadlineSlot: toSlot(task.deadline)
+        }));
+      }
+
+      function resultFor(assignments, inputTasks, expanded, algorithm) {
+        const scheduled = [];
+        const unscheduled = [];
+        let cost = 0;
+        for (let index = 0; index < inputTasks.length; index += 1) {
+          const task = inputTasks[index];
+          const start = assignments[index];
+          if (start === null || start === undefined || start < 0) {
+            unscheduled.push(task);
+            cost += UNSCHEDULED_PENALTY * task.priority;
+            continue;
+          }
+          const end = start + task.durationSlots;
+          cost += task.priority * end;
+          scheduled.push({
+            ...task,
+            startSlot: start,
+            endSlot: end,
+            start: toClock(start),
+            end: toClock(end)
+          });
+        }
+        scheduled.sort((left, right) => left.startSlot - right.startSlot);
+        return { algorithm, scheduled, unscheduled, cost, expanded };
+      }
+
+      function planGreedy(inputTasks, events = FIXED_EVENTS) {
+        const prepared = normalizedTasks(inputTasks);
+        const order = prepared.slice().sort((left, right) =>
+          right.priority - left.priority ||
+          left.deadlineSlot - right.deadlineSlot ||
+          left.durationSlots - right.durationSlots ||
+          left.name.localeCompare(right.name)
+        );
+        const occupied = baseOccupancy(events);
+        const assignments = new Map();
+        for (const task of order) {
+          const start = findEarliestStart(occupied, task.durationSlots, task.deadlineSlot);
+          assignments.set(task.id, start);
+          if (start >= 0) {
+            for (let offset = 0; offset < task.durationSlots; offset += 1) occupied[start + offset] = true;
+          }
+        }
+        return resultFor(prepared.map((task) => assignments.get(task.id)), prepared, prepared.length, "Gulosa");
+      }
+
+      function heuristic(remainingMask, prepared) {
+        let estimate = 0;
+        for (let index = 0; index < prepared.length; index += 1) {
+          if ((remainingMask & (1 << index)) === 0) continue;
+          const task = prepared[index];
+          estimate += Math.min(task.priority * task.durationSlots, UNSCHEDULED_PENALTY * task.priority);
+        }
+        return estimate;
+      }
+
+      function stateKey(state) {
+        return `${state.remainingMask}|${state.assignments.join(",")}|${state.occupied.map((slot) => slot ? "1" : "0").join("")}`;
+      }
+
+      function planAStar(inputTasks, events = FIXED_EVENTS) {
+        const prepared = normalizedTasks(inputTasks);
+        if (prepared.length === 0) return resultFor([], prepared, 0, "A*");
+        const initial = {
+          remainingMask: (1 << prepared.length) - 1,
+          assignments: Array(prepared.length).fill(-1),
+          occupied: baseOccupancy(events),
+          cost: 0,
+          estimate: heuristic((1 << prepared.length) - 1, prepared)
+        };
+        const open = [initial];
+        const bestCost = new Map([[stateKey(initial), 0]]);
+        let expanded = 0;
+
+        while (open.length > 0) {
+          open.sort((left, right) =>
+            left.cost + left.estimate - (right.cost + right.estimate) ||
+            left.cost - right.cost
+          );
+          const state = open.shift();
+          const key = stateKey(state);
+          if (state.cost !== bestCost.get(key)) continue;
+          expanded += 1;
+          if (state.remainingMask === 0) {
+            return resultFor(state.assignments, prepared, expanded, "A*");
+          }
+
+          for (let index = 0; index < prepared.length; index += 1) {
+            const bit = 1 << index;
+            if ((state.remainingMask & bit) === 0) continue;
+            const task = prepared[index];
+            const start = findEarliestStart(state.occupied, task.durationSlots, task.deadlineSlot);
+            const nextMask = state.remainingMask & ~bit;
+            const choices = start < 0 ? [-1] : [start, -1];
+
+            for (const choice of choices) {
+              const assignments = state.assignments.slice();
+              assignments[index] = choice;
+              const occupied = choice < 0
+                ? state.occupied
+                : place(state.occupied, choice, task.durationSlots);
+              const addedCost = choice < 0
+                ? UNSCHEDULED_PENALTY * task.priority
+                : task.priority * (choice + task.durationSlots);
+              const next = {
+                remainingMask: nextMask,
+                assignments,
+                occupied,
+                cost: state.cost + addedCost,
+                estimate: heuristic(nextMask, prepared)
+              };
+              const nextKey = stateKey(next);
+              if (next.cost >= (bestCost.get(nextKey) ?? Infinity)) continue;
+              bestCost.set(nextKey, next.cost);
+              open.push(next);
+            }
+          }
+        }
+        throw new Error("A busca A* terminou sem encontrar um estado final.");
+      }
+
+      function validateTasks(inputTasks) {
+        if (inputTasks.length > 8) {
+          throw new Error("Este protótipo aceita até 8 tarefas por planejamento para manter a busca A* rápida.");
+        }
+        const ids = new Set();
+        for (const task of inputTasks) {
+          if (!task.name || !task.name.trim()) throw new Error("Informe um nome para cada tarefa.");
+          if (ids.has(task.id)) throw new Error("Há tarefas com identificadores repetidos.");
+          ids.add(task.id);
+          if (!Number.isInteger(task.duration) || task.duration <= 0 || task.duration % SLOT_MINUTES !== 0) {
+            throw new Error(`A duração de "${task.name}" deve ser múltipla de ${SLOT_MINUTES} minutos.`);
+          }
+          if (![1, 2, 3].includes(task.priority)) throw new Error(`Prioridade inválida para "${task.name}".`);
+          const deadline = toMinute(task.deadline);
+          if (deadline <= DAY_START || deadline > DAY_END || (deadline - DAY_START) % SLOT_MINUTES !== 0) {
+            throw new Error(`Prazo fora da janela de planejamento para "${task.name}".`);
+          }
+        }
+      }
+
+      function renderResult(result) {
+        byId("comparison").hidden = true;
+        byId("metrics").hidden = false;
+        byId("metrics").innerHTML = `
+          <div class="metric"><span>Tarefas agendadas</span><strong>${result.scheduled.length}/${tasks.length}</strong></div>
+          <div class="metric"><span>Custo ponderado</span><strong>${result.cost}</strong></div>
+          <div class="metric"><span>Estados explorados</span><strong>${result.expanded}</strong></div>
+        `;
+        byId("message").textContent = `${result.algorithm}: ${result.scheduled.length} tarefa(s) agendada(s); compromissos fixos preservados.`;
+        byId("message").className = "notice";
+        const timeline = byId("timeline");
+        timeline.replaceChildren();
+
+        const entries = [
+          ...result.scheduled.map((task) => ({ ...task, kind: "task" })),
+          ...FIXED_EVENTS.map((event) => ({ ...event, kind: "fixed", startSlot: toSlot(event.start), endSlot: toSlot(event.end) }))
+        ].sort((left, right) => left.startSlot - right.startSlot);
+
+        let cursor = 0;
+        for (const entry of entries) {
+          if (entry.startSlot > cursor) timeline.append(makeSlot(cursor, `Livre · ${toClock(cursor)}–${toClock(entry.startSlot)}`, "empty"));
+          timeline.append(makeSlot(
+            entry.startSlot,
+            `${entry.start}–${entry.end}`,
+            entry.kind,
+            entry.name,
+            entry.kind === "task" ? `${entry.duration} min · prioridade ${PRIORITY_NAMES[entry.priority].toLowerCase()} · prazo ${entry.deadline}` : "Compromisso fixo"
+          ));
+          cursor = Math.max(cursor, entry.endSlot);
+        }
+        if (cursor < SLOT_COUNT) timeline.append(makeSlot(cursor, `Livre · ${toClock(cursor)}–${DAY_END / 60}:00`, "empty"));
+        if (entries.length === 0) timeline.innerHTML = '<p class="empty">Não há tarefas nem compromissos neste cenário.</p>';
+
+        const unscheduled = byId("unscheduled");
+        unscheduled.hidden = result.unscheduled.length === 0;
+        if (result.unscheduled.length > 0) {
+          unscheduled.innerHTML = "<h3>Tarefas não agendadas</h3>";
+          const list = document.createElement("ul");
+          for (const task of result.unscheduled) {
+            const item = document.createElement("li");
+            item.textContent = `${task.name} — não coube antes do prazo (${task.deadline}) ou no tempo disponível.`;
+            list.append(item);
+          }
+          unscheduled.append(list);
+        }
+      }
+
+      function makeSlot(startSlot, timeLabel, kind, title = "", detail = "") {
+        const row = document.createElement("div");
+        row.className = "slot";
+        const time = document.createElement("span");
+        time.className = "slot-time";
+        time.textContent = timeLabel;
+        const content = document.createElement("div");
+        content.className = `slot-content ${kind}`;
+        if (title) {
+          const strong = document.createElement("strong");
+          strong.textContent = title;
+          const small = document.createElement("small");
+          small.textContent = detail;
+          content.append(strong, small);
+        } else {
+          content.textContent = detail;
+        }
+        row.append(time, content);
+        return row;
+      }
+
+      function showError(error) {
+        byId("message").textContent = error.message;
+        byId("message").className = "notice error";
+      }
+
+      function runPlanner() {
+        try {
+          validateTasks(tasks);
+          const result = byId("algorithm").value === "greedy" ? planGreedy(tasks) : planAStar(tasks);
+          renderResult(result);
+        } catch (error) {
+          showError(error);
+        }
+      }
+
+      function comparePlanners() {
+        try {
+          validateTasks(tasks);
+          const greedy = planGreedy(tasks);
+          const astar = planAStar(tasks);
+          renderResult(astar);
+          byId("metrics").hidden = true;
+          byId("comparison").hidden = false;
+          byId("comparison").innerHTML = `
+            <div class="compare-card"><strong>Busca gulosa</strong><p>${greedy.scheduled.length}/${tasks.length} agendada(s) · custo ${greedy.cost} · ${greedy.expanded} estado(s)</p></div>
+            <div class="compare-card"><strong>Busca A*</strong><p>${astar.scheduled.length}/${tasks.length} agendada(s) · custo ${astar.cost} · ${astar.expanded} estado(s)</p></div>
+          `;
+          byId("message").textContent = astar.cost <= greedy.cost
+            ? "Comparação concluída: neste cenário, A* encontrou custo ponderado igual ou menor."
+            : "Comparação concluída: neste cenário, a busca gulosa encontrou menor custo; a heurística pode ser aprimorada.";
+          byId("message").className = "notice";
+        } catch (error) {
+          showError(error);
+        }
+      }
+
+      function runTests() {
+        const checks = [];
+        const check = (name, condition) => {
+          if (!condition) throw new Error(`Falha: ${name}`);
+          checks.push(`✓ ${name}`);
+        };
+
+        const fixed = [{ id: "f", name: "Aula", start: "09:00", end: "10:00" }];
+        const oneTask = [{ id: "a", name: "Relatório", duration: 60, priority: 3, deadline: "12:00" }];
+        const greedy = planGreedy(oneTask, fixed);
+        const astar = planAStar(oneTask, fixed);
+        check("Tarefas não se sobrepõem a compromissos fixos", [greedy, astar].every((result) =>
+          result.scheduled.every((task) => task.endSlot <= toSlot("09:00") || task.startSlot >= toSlot("10:00"))
+        ));
+        check("A* agenda uma tarefa viável antes do prazo", astar.scheduled.length === 1 && astar.scheduled[0].end <= "12:00");
+
+        const impossible = [{ id: "b", name: "Prazo impossível", duration: 60, priority: 2, deadline: "08:30" }];
+        check("Prazo impossível deixa a tarefa explicitamente pendente", planAStar(impossible, []).unscheduled.length === 1);
+        check("Agenda vazia retorna sem erro", planAStar([], []).scheduled.length === 0);
+
+        const mixed = [
+          { id: "c", name: "Alta prioridade", duration: 30, priority: 3, deadline: "12:00" },
+          { id: "d", name: "Baixa prioridade", duration: 30, priority: 1, deadline: "12:00" }
+        ];
+        const mixedResult = planAStar(mixed, []);
+        check("Tarefas agendadas não se sobrepõem", mixedResult.scheduled.every((task, index, list) =>
+          index === 0 || list[index - 1].endSlot <= task.startSlot
+        ));
+
+        byId("test-output").hidden = false;
+        byId("test-output").textContent = checks.join("\n");
+        byId("test-summary").textContent = `${checks.length} testes passaram.`;
+        byId("test-summary").className = "notice";
+        return checks.length;
+      }
+
+      function bindEvents() {
+        byId("task-form").addEventListener("submit", (event) => {
+          event.preventDefault();
+          const name = byId("task-name").value.trim();
+          if (!name) return;
+          if (tasks.length >= 8) {
+            showError(new Error("O protótipo aceita até 8 tarefas por planejamento."));
+            return;
+          }
+          tasks.push({
+            id: `task-${nextId++}`,
+            name,
+            duration: Number(byId("task-duration").value),
+            priority: Number(byId("task-priority").value),
+            deadline: byId("task-deadline").value
+          });
+          byId("task-name").value = "";
+          renderTasks();
+          byId("message").textContent = "Tarefa adicionada. Gere uma nova agenda para recalcular.";
+          byId("message").className = "notice";
+        });
+        byId("task-list").addEventListener("click", (event) => {
+          const button = event.target.closest("[data-remove]");
+          if (!button) return;
+          tasks = tasks.filter((task) => task.id !== button.dataset.remove);
+          renderTasks();
+        });
+        byId("plan").addEventListener("click", runPlanner);
+        byId("compare").addEventListener("click", comparePlanners);
+        byId("run-tests").addEventListener("click", () => {
+          try {
+            runTests();
+          } catch (error) {
+            byId("test-summary").textContent = error.message;
+            byId("test-summary").className = "notice error";
+          }
+        });
+      }
+
+      populateDeadlines();
+      renderTasks();
+      renderFixedEvents();
+      bindEvents();
+      if (new URLSearchParams(location.search).has("test")) {
+        try {
+          runTests();
+          runPlanner();
+        } catch (error) {
+          showError(error);
+        }
+      }
+    })();
+  </script>
+</body>
+</html>
